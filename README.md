@@ -65,6 +65,7 @@ https://docs.oracle.com/iaas/Content/General/Concepts/regions.htm
 
 In our case for India West (Mumbai) it is “ap-mumbai-1”
 
+```
 Collect the following information and copy them into our notepad.
 Auth Token: <auth-token> from step 3.
 Region: <region-identifier> from step 4. Example: us-ashburn-1.
@@ -73,6 +74,7 @@ Tenancy name: <tenancy-name> from our user avatar.
 Tenancy OCID: <tenancy-ocid> from our user avatar, go to Tenancy:<our-tenancy> and copy OCID.
 Username: <user-name> from our user avatar.
 User OCID: <user-ocid> from our user avatar, go to User Settings and copy OCID.
+```
 
 2. Create SSH Encryption Keys
 
@@ -82,8 +84,10 @@ Open a terminal window:
 MacOS or Linux: Open a terminal window in the directory where we want to store our keys.
 Windows: Right-click on the directory where we want to store our keys and select Git Bash Here.
 
+```
 Issue the following OpenSSH command:
 ssh-keygen -t rsa -N "" -b 2048 -C <our-ssh-key-name> -f <our-ssh-key-name>
+```
 
 The command generates some random text art used to generate the keys. When complete, we have two files:
 The private key file: <our-ssh-key-name>
@@ -113,9 +117,12 @@ Create a API Key by clicking on the API Keys and download and save the keys to a
 2. In the Start VCN Wizard workflow, select VCN with Internet Connectivity and then click Start VCN Wizard .
 3. In the configuration dialog, fill in the VCN Name for our VCN. Our Compartment is already set to its default value of <our-tenancy> (root).
 4. In the Configure VCN and Subnets section, keep the default values for the CIDR blocks:
+
+``` 
 VCN CIDR BLOCK: 10.0.0.0/16
 PUBLIC SUBNET CIDR BLOCK: 10.0.0.0/24
 PRIVATE SUBNET CIDR BLOCK: 10.0.1.0/24
+``` 
 
 ![image](https://user-images.githubusercontent.com/42166489/107557372-865ce700-6bff-11eb-9313-0501894c1cc5.png)
 
@@ -143,6 +150,7 @@ An Add Ingress Rules dialog is displayed.
 12. Fill in the ingress rule with the following information. Once all the data is entered, click Add Ingress Rules.
 Fill in the ingress rule as follows:
 
+```
 Stateless: Checked
 Source Type: CIDR
 Source CIDR: 0.0.0.0/0
@@ -151,6 +159,7 @@ Source port range: (leave-blank)
 Destination Port Range: 3000
 Description: VCN for applications
 Once we click Add Ingress Rule, HTTP connections are allowed to our public subnet.
+```
 
 4.Install an Ubuntu VM
 
@@ -168,6 +177,7 @@ Instance Shape: VM.Standard.E2.1.Micro: Virtual Machine, 1 core OCPU, 1 GB Memor
 
 Configure Networking
 
+```
 VIRTUAL CLOUD NETWORK COMPARTMENT: <our-compartment>
 VIRTUAL CLOUD NETWORK: <VCN-we-created>
 SUBNET COMPARTMENT: <our-subnet-compartment>
@@ -175,6 +185,7 @@ SUBNET: <public-subnet-ou-created>
 USE NETWORK SECURITY GROUPS TO CONTROL TRAFFIC: Unchecked
 ASSIGN A PUBLIC IP ADDRESS: Selected/Checked
 Additional Options
+```
 
 Boot Volume: All options Unchecked
 Add SSH Keys: Add the public key file (.pub) we created in the beginning of this tutorial.
@@ -223,17 +234,24 @@ These commands add a rule to allow HTTP traffic through port 3000 and saves the 
 
 Install NodeJS version 8.10+ and express:
 
+```
 sudo apt update
 sudo apt install nodejs
 sudo apt install node-express-generator
 express --version
+```
 
 Create a directory for our application and type the following commands. 
+
+```
 mkdir node-hello-app
 cd node-hello-app
 vi app.js
+```
 
 In the file, input the following text and save the file:
+
+```
 const express = require('express')
 const app = express()
 app.get('/', function (req, res) {
@@ -242,6 +260,7 @@ app.get('/', function (req, res) {
 app.listen(3000, function() {
   console.log('Hello World app listening on port 3000!');
 })
+```
 
 Run the NodeJS program:
 node app.js
@@ -266,13 +285,17 @@ Package the Application
 Package our application and then point to the package in our Dockerfile.
 First, make sure we are in the node-hello-app directory.
 
+```
 sudo apt install npm
 npm --version
+```
 
 Create a package.json file:
 vi package.json
 
 In the file, input the following text, update the optional author and repository fields and then save the file:
+
+```
 {
   "name": "node-hello-app",
   "version": "1.0.0",
@@ -291,23 +314,32 @@ In the file, input the following text, update the optional author and repository
   },
   "license": "UPL-1.0"
 }
+```
 
 Install the package with npm.
+
+```
 npm install
+```
 
 Install Docker on our Oracle Linux VM.
 
+```
 Install Docker 18.0.6+ on our VM
 sudo snap install docker
 docker --version
-
+```
 
 Build a Docker image for our application.
 
 Create a file named Dockerfile
+```
 vi Dockerfile
+```
 
 In the file, input the following text and save the file:
+
+```
 FROM node:12.18.1
 WORKDIR /app
 COPY app.js .
@@ -315,9 +347,12 @@ COPY package.json .
 RUN npm install
 EXPOSE 3000
 CMD [ "node", "app.js" ]
+```
 
 Build a Docker image:
+```
 sudo docker build -t node-hello-app .
+```
 
 We should get a message of success.
 
@@ -371,12 +406,17 @@ I am running it like this:
 ubuntu@Instance-NodeExpress:~/node-hello-app$ sudo docker tag node-hello-app bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app
 
 Check our Docker images to see if the reference has been created.
-sudo docker images
 
+```
+sudo docker images
+```
+
+```
 ubuntu@Instance-NodeExpress:~/node-hello-app$ sudo docker images
 REPOSITORY                                       TAG                 IMAGE ID            CREATED             SIZE
 bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app   latest              ada86c45328c        19 hours ago        921MB
 node-hello-app                                   latest              ada86c45328c        19 hours ago        921MB
+```
 
 Push the image to OCIR:
 sudo docker push bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app:latest
@@ -398,6 +438,8 @@ Congratulations! We created a Node Express Docker image. Now we can create a Kub
 Set up the Kubernetes cluster we will deploy our application to. We will use a wizard to set up our first cluster.
 
 From the OCI main menu select Developer Services then Container Clusters.
+
+```
 Click Create Cluster.
 Select Quick Create.
 Click Launch Workflow.
@@ -413,6 +455,7 @@ Number of Nodes: 3
 Add Ons: <none-selected>
 Click Next.
 All our choices are displayed. Review them to make sure everything is configurated correctly.
+```
 
 Click Create Cluster.
 The services set up for our cluster are displayed.
@@ -429,52 +472,69 @@ We can use the OCI Command Line Interface (CLI) to push our application to Regis
 Install virtualenv:
 With a virtual environment, we can manage dependencies for our project. Every project can be in its own virtual environment to host independent groups of Python libraries. our will use virtualenv for the CLI.
 
+```
 sudo apt install python3-venv
 
 Install a virtual environment wrapper.
 sudo apt install python3-pip
 sudo pip3 install virtualenvwrapper
+```
 
 Set up our virtual environment wrapper in .bashrc.
 Update the file:
 
+```
 sudo vi .bashrc
-
+```
 In the file, append the following text and save the file:
+```
 # set up Python env
 export WORKON_HOME=~/envs
 export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 export VIRTUALENVWRAPPER_VIRTUALENV_ARGS=' -p /usr/bin/python3 '
 source /usr/local/bin/virtualenvwrapper.sh
+```
 
 Activate the above commands in the current window.
+```
 source ~/.bashrc
+```
 
 Start a virtual environment.
+```
 mkvirtualenv cli-app
+```
 
 We should see something like: (cli-app) ubuntu@<ubuntu-instance-name>:~$
 
+```
 Install OCI CLI .
 pip3 install oci-cli
-
+```
 Test the installation:
+```
 oci -v
-
+```
 Set up the OCI CLI config file:
+```
 oci setup config
+```
 
 Enter basic information: (Get the answers from "Gather Required Information" step.)
 
+```
 Location for our config [$HOME/.oci/config]: <take-default>
 User OCID: <user-ocid>
 Tenancy OCID: <tenancy-ocid>
 Region (e.g. us-ashburn-1): <region-identifier>
-Set up our OpenSSL API encryption keys:
+```
 
+Set up our OpenSSL API encryption keys:
+```
 Generate a new API Signing RSA key pair? [Y/n]: Y
 Directory for our keys [$HOME/.oci]: <take-default>
 Name for our key [oci_api_key] <take-default>
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107558332-a640da80-6c00-11eb-9404-8c60eacac341.png)
 
@@ -483,10 +543,15 @@ Name for our key [oci_api_key] <take-default>
 ![image](https://user-images.githubusercontent.com/42166489/107558385-b48ef680-6c00-11eb-8c00-6dbd5111afdd.png)
 
 Activate the cli-app environment:
+
+```
 workon cli-app
+```
 
 Copy the public key. In the terminal enter:
+```
 cat $HOME/.oci/oci_api_key_public.pem
+```
 
 Add the public key to our user account.
 From our user avatar, go to User Settings.
@@ -516,17 +581,23 @@ Activate our cli-app environment and test the oci connection.
 oci -v
 
 Make our .kube directory if it doesn't exist.
+```
 mkdir -p $HOME/.kube
+```
 
 Create kubeconfig file for our setup. Use the information from Access our Cluster dialog.
 oci ce cluster create-kubeconfig <copy-data-from-dialog>
 
+```
 Export the KUBECONFIG environment variable.
 export KUBECONFIG=$HOME/.kube/config
+```
 
 Test our cluster configuration with the following command:
 List clusters:
+```
 kubectl get service
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107558861-50b8fd80-6c01-11eb-8193-8c3cf6f78ce8.png)
 
@@ -570,6 +641,7 @@ Copy the following information in our app.yaml.
 Here are some of the parameters that we will set for the deployment section:
 
 Yaml File:
+```
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -607,17 +679,22 @@ spec:
   - port: 3000
   selector:
     app: node-hello-app
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107558976-75ad7080-6c01-11eb-8384-f7d2ec5f65f0.png)
 
 Deploy our application with the following command:
+```
 kubectl create -f app.yaml
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107559022-865de680-6c01-11eb-9a8e-87e7bea1a81f.png)
 
 Check for our load balancer to deploy.
+```
 kubectl get service
 Kubectl get pods
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107559054-91b11200-6c01-11eb-8ec4-4f4428f4fe17.png)
 
@@ -631,7 +708,7 @@ Eg:  http://140.238.253.204:3000/
 Clean up the Application:
 After we are done, clean up and remove the services we created.
 Delete our application deployment and load balancer service:
-
+```
 kubectl delete -f app.yaml
 The following messages are returned:
 service "node-hello-app-lb" deleted
@@ -639,6 +716,7 @@ deployment.extensions "node-hello-app" deleted
 
 To check that the service is removed:
 kubectl get service
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107559114-a8576900-6c01-11eb-99e9-b3a0c2e00f1c.png)
 
