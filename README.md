@@ -207,6 +207,298 @@ chmod 400 <private_key_file_path>
 Use the following SSH command to access the instance.
 ssh -i <our-private-key-file> ubuntu@<x.x.x.x>
 
+Terminal Commands:
+
+![image](https://user-images.githubusercontent.com/42166489/107557761-04b98900-6c00-11eb-9698-2aff5bee87c0.png)
+
+Since we identified our public key when we created the VM, this command should log we into our VM. we can now issue sudo commands to install and start our server.
+
+- Update firewall settings.
+The Ubuntu firewall is disabled by default. However, it is still necessary to update our iptables configuration to allow HTTP traffic. Execute the following commands to update iptables.
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3000 -j ACCEPT
+
+sudo netfilter-persistent save
+
+These commands add a rule to allow HTTP traffic through port 3000 and saves the changes to the iptables configuration files.
+
+Install NodeJS version 8.10+ and express:
+
+sudo apt update
+sudo apt install nodejs
+sudo apt install node-express-generator
+express --version
+
+Create a directory for our application and type the following commands. 
+mkdir node-hello-app
+cd node-hello-app
+vi app.js
+
+In the file, input the following text and save the file:
+const express = require('express')
+const app = express()
+app.get('/', function (req, res) {
+  res.send('Hello World!')
+})
+app.listen(3000, function() {
+  console.log('Hello World app listening on port 3000!');
+})
+
+Run the NodeJS program:
+node app.js
+
+![image](https://user-images.githubusercontent.com/42166489/107557797-113de180-6c00-11eb-896f-7dd6f85cd35d.png)
+
+Test the application using the command line or a browser:
+To test with curl, from a new terminal, connect to our Ubuntu VM with our SSH keys, and then in the command line enter: curl -X GET http://localhost:3000
+From a browser, connect to the public IP address assigned to our VM: http://<x.x.x.x>:3000
+We should see Hello World! on our VM, or in our browser.
+
+![image](https://user-images.githubusercontent.com/42166489/107557855-1c910d00-6c00-11eb-9208-dff96e5446fa.png)
+
+We have successfully created a local NodeJS application in an Express framework, on our Oracle Cloud Infrastructure VM.
+
+6. Build and Push the Node Express Docker Image
+
+Next, create a Docker image on our Ubuntu Linux VM and then push it to Oracle Cloud Infrastructure Registry.
+
+Package the Application
+
+Package our application and then point to the package in our Dockerfile.
+First, make sure we are in the node-hello-app directory.
+
+sudo apt install npm
+npm --version
+
+Create a package.json file:
+vi package.json
+
+In the file, input the following text, update the optional author and repository fields and then save the file:
+{
+  "name": "node-hello-app",
+  "version": "1.0.0",
+  "description": "Node Express Hello application",
+  "author": "Example User <username@example.com>",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+  "type": "git",
+  "url": "git://github.com/username/repository.git"
+  },
+  "dependencies": {
+    "express": "^4.0.0"
+  },
+  "license": "UPL-1.0"
+}
+
+Install the package with npm.
+npm install
+
+Install Docker on our Oracle Linux VM.
+
+Install Docker 18.0.6+ on our VM
+sudo snap install docker
+docker --version
+
+
+Build a Docker image for our application.
+
+Create a file named Dockerfile
+vi Dockerfile
+
+In the file, input the following text and save the file:
+FROM node:12.18.1
+WORKDIR /app
+COPY app.js .
+COPY package.json .
+RUN npm install
+EXPOSE 3000
+CMD [ "node", "app.js" ]
+
+Build a Docker image:
+sudo docker build -t node-hello-app .
+
+We should get a message of success.
+
+![image](https://user-images.githubusercontent.com/42166489/107557898-2b77bf80-6c00-11eb-9689-6a983b0d07a3.png)
+
+Run the Docker image: sudo docker run --rm -p 3000:3000 node-hello-app:latest
+Test the application using the command line or a browser:
+To test with curl, in a terminal, enter curl localhost:3000
+From a browser, connect to the public IP address assigned to our VM: http://<x.x.x.x>:3000.
+
+Stop the Hello world application.
+From another terminal, run sudo docker ps. Find the container id for our application and then run sudo docker stop <node-hello-app-container-id>.
+
+![image](https://user-images.githubusercontent.com/42166489/107557934-36325480-6c00-11eb-8158-5a80b505bf90.png)
+
+Push our Docker image to OCIR
+With our Docker image created, now we need to push it to OCIR.
+
+Open a terminal window.
+Use <region-key> from the gather information section to log Docker into OCIR
+
+sudo docker login <region-key>.ocir.io
+
+We are prompted for our login name and password.
+
+Username: <tenancy-name>/<user-name> -> bmdrgwy1wsjh/oracleidentitycloudservice/Saikat
+Password: <auth-token>
+
+Note: 
+<tenancy-name> is the registry name in our case. “bmdrgwy1wsjh”
+<user-name> For a federated user, use the username like this: oracleidentitycloudservice/Saikat
+<auth-token> This was created earlier in the beginning
+
+![image](https://user-images.githubusercontent.com/42166489/107557976-45190700-6c00-11eb-9b13-3df99c0b7785.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107557983-49452480-6c00-11eb-9e00-fdf2543e06d7.png)
+
+List our local Docker images.
+sudo docker images
+
+The Docker images on our system are displayed. Identify the image we created in the last section: node-hello-app
+
+Before we push our local image to OCIR, we must reference it with a new name that includes the path to OCIR. Then we can push the image with the new name to OCIR. Use the Docker tag command to create a shortcut to our image using the new name:
+
+sudo docker tag <our-local-image> <registry-image>
+
+For example, a short version of our username is often used. "John Doe" might use: sudo docker tag node-hello-app iad.ocir.io/<tenancy-name>/johnd/node-hello-app.
+
+I am running it like this:
+
+ubuntu@Instance-NodeExpress:~/node-hello-app$ sudo docker tag node-hello-app bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app
+
+Check our Docker images to see if the reference has been created.
+sudo docker images
+
+ubuntu@Instance-NodeExpress:~/node-hello-app$ sudo docker images
+REPOSITORY                                       TAG                 IMAGE ID            CREATED             SIZE
+bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app   latest              ada86c45328c        19 hours ago        921MB
+node-hello-app                                   latest              ada86c45328c        19 hours ago        921MB
+
+Push the image to OCIR:
+sudo docker push bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app:latest
+
+![image](https://user-images.githubusercontent.com/42166489/107558184-7db8e080-6c00-11eb-9d14-d64b8d604914.png)
+
+View the OCIR Repository we created
+
+![image](https://user-images.githubusercontent.com/42166489/107558218-88737580-6c00-11eb-812f-128479da5def.png)
+
+OCIR registry:
+
+![image](https://user-images.githubusercontent.com/42166489/107558264-932e0a80-6c00-11eb-8439-761cb00ee4bc.png)
+
+Congratulations! We created a Node Express Docker image. Now we can create a Kubernetes cluster and deploy this image to the cluster.
+
+7.Create a Kubernetes Cluster
+
+Set up the Kubernetes cluster we will deploy our application to. We will use a wizard to set up our first cluster.
+
+From the OCI main menu select Developer Services then Container Clusters.
+Click Create Cluster.
+Select Quick Create.
+Click Launch Workflow.
+The Cluster Creation dialog is displayed.
+
+Fill in the following information:
+Name: <our-cluster-name>
+Compartment: <our-compartment-name>
+Kubernetes Version: <take-default>
+Visibility Type: <Private>
+Shape: VM.Standard.E2.1
+Number of Nodes: 3
+Add Ons: <none-selected>
+Click Next.
+All our choices are displayed. Review them to make sure everything is configurated correctly.
+
+Click Create Cluster.
+The services set up for our cluster are displayed.
+Click Close.
+
+our have successfully created a Kubernetes cluster.
+
+8.Set up OCI Command Line Interface
+
+We can use the OCI Command Line Interface (CLI) to push our application to Registry and then pull and deploy it with Container Engine for Kubernetes. In this step, we install and set up the CLI to run on the VM that we are using as our local machine.
+
+
+
+Install virtualenv:
+With a virtual environment, we can manage dependencies for our project. Every project can be in its own virtual environment to host independent groups of Python libraries. our will use virtualenv for the CLI.
+
+sudo apt install python3-venv
+
+Install a virtual environment wrapper.
+sudo apt install python3-pip
+sudo pip3 install virtualenvwrapper
+
+Set up our virtual environment wrapper in .bashrc.
+Update the file:
+
+sudo vi .bashrc
+
+In the file, append the following text and save the file:
+# set up Python env
+export WORKON_HOME=~/envs
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+export VIRTUALENVWRAPPER_VIRTUALENV_ARGS=' -p /usr/bin/python3 '
+source /usr/local/bin/virtualenvwrapper.sh
+
+Activate the above commands in the current window.
+source ~/.bashrc
+
+Start a virtual environment.
+mkvirtualenv cli-app
+
+We should see something like: (cli-app) ubuntu@<ubuntu-instance-name>:~$
+
+Install OCI CLI .
+pip3 install oci-cli
+
+Test the installation:
+oci -v
+
+Set up the OCI CLI config file:
+oci setup config
+
+Enter basic information: (Get the answers from "Gather Required Information" step.)
+
+Location for our config [$HOME/.oci/config]: <take-default>
+User OCID: <user-ocid>
+Tenancy OCID: <tenancy-ocid>
+Region (e.g. us-ashburn-1): <region-identifier>
+Set up our OpenSSL API encryption keys:
+
+Generate a new API Signing RSA key pair? [Y/n]: Y
+Directory for our keys [$HOME/.oci]: <take-default>
+Name for our key [oci_api_key] <take-default>
+
+![image](https://user-images.githubusercontent.com/42166489/107558332-a640da80-6c00-11eb-9404-8c60eacac341.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107558366-b0fb6f80-6c00-11eb-91a5-022e9bc5728c.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107558385-b48ef680-6c00-11eb-8c00-6dbd5111afdd.png)
+
+Activate the cli-app environment:
+workon cli-app
+
+Copy the public key. In the terminal enter:
+cat $HOME/.oci/oci_api_key_public.pem
+
+Add the public key to our user account.
+From our user avatar, go to User Settings.
+Click Add Public Key.
+Select Paste Public Keys.
+Paste value from previous step, including the lines with BEGIN PUBLIC KEY and END PUBLIC KEY
+Click Add.
+
+
+
+
+
 
 
 
