@@ -495,6 +495,157 @@ Select Paste Public Keys.
 Paste value from previous step, including the lines with BEGIN PUBLIC KEY and END PUBLIC KEY
 Click Add.
 
+![image](https://user-images.githubusercontent.com/42166489/107558798-3ed75a80-6c01-11eb-9a19-22246f57052a.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107558809-4139b480-6c01-11eb-91d1-0cf7c056e7a3.png)
+
+9.Manage the Kubernetes Cluster (Local)
+
+In this section, we include the Kubernetes cluster information in a .kube/config file, so we can access the cluster and manage deployments. To do that, complete the following steps:
+
+From the OCI main menu select Developer Services then Container Clusters.
+Click the link to <our-cluster>.
+The information about our cluster is displayed.
+
+Click Access Cluster.
+
+Select Local Access.
+Follow the steps provided in the dialog. The steps for local access are reprinted here for our reference.
+
+Activate our cli-app environment and test the oci connection.
+oci -v
+
+Make our .kube directory if it doesn't exist.
+mkdir -p $HOME/.kube
+
+Create kubeconfig file for our setup. Use the information from Access our Cluster dialog.
+oci ce cluster create-kubeconfig <copy-data-from-dialog>
+
+Export the KUBECONFIG environment variable.
+export KUBECONFIG=$HOME/.kube/config
+
+Test our cluster configuration with the following command:
+List clusters:
+kubectl get service
+
+![image](https://user-images.githubusercontent.com/42166489/107558861-50b8fd80-6c01-11eb-8193-8c3cf6f78ce8.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107558869-544c8480-6c01-11eb-943a-0352018dc25a.png)
+
+10.Deploy the Docker Image to the Cluster
+
+Now, create a manifest file to include information about the following resources and then create the resources with Kubernetes:
+Deployment: Pull and deploy the image from registry.
+Load Balancer Service: Make the application available with a public IP address.
+
+Deploy our Image to the Cluster
+With our image in OCIR, we can now deploy our application. Perform the following commands either in Cloud Shell or in a terminal connected to our VM.
+
+First, create a registry secret for our application. This will be used to authenticate our image when it is deployed to our cluster.
+Fill in the information in this template to create our secret with the name ocirsecret.
+
+kubectl create secret docker-registry ocirsecret --docker-server=<region-code>.ocir.io  --docker-username='<tenancy-name>/<user-name>' --docker-password='<auth-token>' --docker-email='<email-address>'
+
+After executing the command, we should get message similar to: secret/ocirsecret created.
+
+Verify the secret was created. Issue the following command.
+kubectl get secret ocirsecret --output=yaml
+
+The output includes information about our secret is shown in the yaml format.
+
+Prepare the host URL to our registry image using the following template.
+<region-code>.ocir.io/<tenancy-name>/<repo-name>/<image-name>:<tag>
+Eg: bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app:latest
+
+*issues executing this step
+Create a file called app.yaml.
+vi app.yaml
+
+![image](https://user-images.githubusercontent.com/42166489/107558929-66c6be00-6c01-11eb-9bc1-23eade876df6.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107558919-63cbcd80-6c01-11eb-854d-ae1c6c6c6262.png)
+
+Copy the following information in our app.yaml.
+
+Here are some of the parameters that we will set for the deployment section:
+
+Yaml File:
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: node-hello-app
+spec:
+  selector:
+    matchLabels:
+      app: node-hello-app
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: node-hello-app
+        version: v1
+    spec:
+      containers:
+      - name: node-hello-app
+        image: bom.ocir.io/bmdrgwy1wsjh/saikat/node-hello-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-hello-app-lb
+  labels:
+    app: node-hello-app
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3000
+  selector:
+    app: node-hello-app
+
+![image](https://user-images.githubusercontent.com/42166489/107558976-75ad7080-6c01-11eb-8384-f7d2ec5f65f0.png)
+
+Deploy our application with the following command:
+kubectl create -f app.yaml
+
+![image](https://user-images.githubusercontent.com/42166489/107559022-865de680-6c01-11eb-9a8e-87e7bea1a81f.png)
+
+Check for our load balancer to deploy.
+kubectl get service
+Kubectl get pods
+
+![image](https://user-images.githubusercontent.com/42166489/107559054-91b11200-6c01-11eb-8ec4-4f4428f4fe17.png)
+
+Test in Browser:
+Using the IP address for the Load Balancer connect to the app in a browser, http://x.x.x.x:3000
+
+Eg:  http://140.238.253.204:3000/
+
+![image](https://user-images.githubusercontent.com/42166489/107559084-9b3a7a00-6c01-11eb-8d5c-bfb54401896a.png)
+
+Clean up the Application:
+After we are done, clean up and remove the services we created.
+Delete our application deployment and load balancer service:
+
+kubectl delete -f app.yaml
+The following messages are returned:
+service "node-hello-app-lb" deleted
+deployment.extensions "node-hello-app" deleted
+
+To check that the service is removed:
+kubectl get service
+
+![image](https://user-images.githubusercontent.com/42166489/107559114-a8576900-6c01-11eb-99e9-b3a0c2e00f1c.png)
+
+Congratulations! We installed and deployed a Node Express application to a Kubernetes cluster on Oracle Cloud Infrastructure.
+
+
+
 
 
 
