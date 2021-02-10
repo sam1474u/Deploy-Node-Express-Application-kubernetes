@@ -3,14 +3,14 @@
 In this tutorial, we use an Oracle Cloud Infrastructure account to set up a Kubernetes cluster. Then, we deploy a Node Express application to our cluster. 
 Key tasks include how to:
 
-Set up OpenSSL API encryption keys to access our cluster.
-Set up an authentication token.
-Set up a Kubernetes cluster on OCI.
-Set up OCI CLI to access our cluster.
-Build a Node Express application and Docker Image.
-Push our image to OCIR.
-Deploy our Docker application to our cluster.
-Connect to our application from the internet.
+- Set up OpenSSL API encryption keys to access our cluster.
+- Set up an authentication token.
+- Set up a Kubernetes cluster on OCI.
+- Set up OCI CLI to access our cluster.
+- Build a Node Express application and Docker Image.
+- Push our image to OCIR.
+- Deploy our Docker application to our cluster.
+- Connect to our application from the internet.
 
 ![image](https://user-images.githubusercontent.com/42166489/107557121-3716b680-6bff-11eb-88c1-ee39c414ed55.png)
 
