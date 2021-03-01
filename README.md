@@ -26,7 +26,7 @@ https://gitforwindows.org/
 
 In this tutorial we are going to use a Mac machine.
 
-1. Gather Required Information
+### 1. Gather Required Information
 Prepare the information we need from the Oracle Cloud Infrastructure Console.
 
 Check our service limits:
@@ -76,7 +76,7 @@ Username: <user-name> from our user avatar.
 User OCID: <user-ocid> from our user avatar, go to User Settings and copy OCID.
 ```
 
-2. Create SSH Encryption Keys
+### 2. Create SSH Encryption Keys
 
 Create ssh encryption keys to connect to our compute instance.
 
@@ -108,7 +108,7 @@ Create a API Key by clicking on the API Keys and download and save the keys to a
 
 ![image](https://user-images.githubusercontent.com/42166489/107557300-6fb69000-6bff-11eb-955f-462b7a352359.png)
 
-3. Create a Virtual Cloud Network (VCN)
+### 3. Create a Virtual Cloud Network (VCN)
 
 1. From the main landing page, select Set up a network with a wizard.
 
@@ -161,7 +161,7 @@ Description: VCN for applications
 Once we click Add Ingress Rule, HTTP connections are allowed to our public subnet.
 ```
 
-4.Install an Ubuntu VM
+### 4. Install an Ubuntu VM
 
 From the Oracle Cloud Infrastructure main menu, select Compute, then Instances.
 From the list of instances screen, click Create Instance.
@@ -198,7 +198,7 @@ Provisioning the system may take several minutes.
 
 we have successfully created an Ubuntu Linux VM to build and test our applications.
 
-5.Create a Local Node Express Application
+### 5.Create a Local Node Express Application
 
 Next, set up an Express framework on our Ubuntu Linux VM and then create and run a NodeJS application.
 
@@ -276,7 +276,7 @@ We should see Hello World! on our VM, or in our browser.
 
 We have successfully created a local NodeJS application in an Express framework, on our Oracle Cloud Infrastructure VM.
 
-6. Build and Push the Node Express Docker Image
+### 6. Build and Push the Node Express Docker Image
 
 Next, create a Docker image on our Ubuntu Linux VM and then push it to Oracle Cloud Infrastructure Registry.
 
@@ -433,7 +433,7 @@ OCIR registry:
 
 Congratulations! We created a Node Express Docker image. Now we can create a Kubernetes cluster and deploy this image to the cluster.
 
-7. Create a Kubernetes Cluster
+### 7. Create a Kubernetes Cluster
 
 Set up the Kubernetes cluster we will deploy our application to. We will use a wizard to set up our first cluster.
 
@@ -466,7 +466,7 @@ Click Close.
 
 our have successfully created a Kubernetes cluster.
 
-8.Set up OCI Command Line Interface
+### 8. Set up OCI Command Line Interface
 
 We can use the OCI Command Line Interface (CLI) to push our application to Registry and then pull and deploy it with Container Engine for Kubernetes. In this step, we install and set up the CLI to run on the VM that we are using as our local machine.
 
@@ -567,7 +567,7 @@ Click Add.
 
 ![image](https://user-images.githubusercontent.com/42166489/107558809-4139b480-6c01-11eb-91d1-0cf7c056e7a3.png)
 
-9.Manage the Kubernetes Cluster (Local)
+### 9. Manage the Kubernetes Cluster (Local)
 
 In this section, we include the Kubernetes cluster information in a .kube/config file, so we can access the cluster and manage deployments. To do that, complete the following steps:
 
