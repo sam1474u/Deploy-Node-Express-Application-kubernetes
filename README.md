@@ -433,11 +433,14 @@ OCIR registry:
 
 Congratulations! We created a Node Express Docker image. Now we can create a Kubernetes cluster and deploy this image to the cluster.
 
-7.Create a Kubernetes Cluster
+7. Create a Kubernetes Cluster
 
 Set up the Kubernetes cluster we will deploy our application to. We will use a wizard to set up our first cluster.
 
 From the OCI main menu select Developer Services then Container Clusters.
+
+You can also follow this link for more info:
+https://www.oracle.com/webfolder/technetwork/tutorials/obe/oci/oke-full/index.html
 
 ```
 Click Create Cluster.
