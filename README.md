@@ -17,7 +17,7 @@ Key tasks include how to:
 What we need to start:
 To successfully perform this tutorial, we must have the following:
 
-1.A paid Oracle Cloud Infrastructure account. 
+1. A paid Oracle Cloud Infrastructure account. 
 https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm
 
 2. SSH support:
