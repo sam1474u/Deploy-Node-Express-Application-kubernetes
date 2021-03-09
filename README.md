@@ -19,6 +19,7 @@ To successfully perform this tutorial, we must have the following:
 
 1.A paid Oracle Cloud Infrastructure account. 
 https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm
+
 2. SSH support:
 A MacOS or Linux computer with ssh support installed.
 A Windows machine with Git Bash installed. 
